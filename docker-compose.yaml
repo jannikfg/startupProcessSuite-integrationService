@@ -9,8 +9,6 @@ services:
       - nginx-proxy-manager
       - redpanda_network
       - keycloak
-    depends_on:
-      - redpanda
 
 networks:
   nginx-proxy-manager:
