@@ -1,0 +1,21 @@
+services:
+  camel:
+    container_name: camel
+    build:
+      context: .
+    ports:
+      - 8083:8083
+    networks:
+      - nginx-proxy-manager
+      - redpanda_network
+      - keycloak
+    depends_on:
+      - redpanda
+
+networks:
+  nginx-proxy-manager:
+    external: true
+  redpanda_network:
+    external: true
+  keycloak:
+    external: true
