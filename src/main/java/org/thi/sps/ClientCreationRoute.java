@@ -21,9 +21,6 @@ public class ClientCreationRoute extends RouteBuilder {
 
   @Override
   public void configure() throws Exception {
-    System.out.println(redpandaUrl);
-    System.out.println(clientServiceUrl);
-    RouteDefinition routeDefinition =
     from("kafka:" + TOPIC_NAME + "?brokers=" + redpandaUrl)
         .log("Message received from Kafka: ${body}")
         .setHeader("Content-Type", constant("application/json"))
