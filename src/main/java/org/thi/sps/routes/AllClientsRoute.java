@@ -7,22 +7,20 @@ import org.apache.camel.builder.RouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
-public class OfferCreationRoute extends RouteBuilder {
+public class AllClientsRoute extends RouteBuilder {
 
   @Inject
-  @ConfigProperty(name = "offerservice.url")
-  String offerServiceUrl;
+  @ConfigProperty(name = "clientservice.url")
+  String clientServiceUrl;
 
   @Override
   public void configure() throws Exception {
 
-    from("jetty:http://0.0.0.0:8087/api/v1/offers/create")
-        .log("Received a POST request on /api/v1/offers/create")
+    from("jetty:http://0.0.0.0:8087/api/v1/clients")
+        .log("Received a GET request on /api/v1/clients")
         .removeHeaders("CamelHttp*")
-        .setHeader(Exchange.HTTP_METHOD, constant("POST"))
-        .to(offerServiceUrl + "/api/v1/offers/create")
+        .setHeader(Exchange.HTTP_METHOD, constant("GET"))
+        .to( clientServiceUrl + "/api/v1/clients")  // Externe API aufrufen
         .log("Response received: ${body}");
-
   }
-
 }

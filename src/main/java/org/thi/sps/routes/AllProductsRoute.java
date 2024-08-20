@@ -7,7 +7,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
-public class RouteForAllProducts extends RouteBuilder {
+public class AllProductsRoute extends RouteBuilder {
+
   @Inject
   @ConfigProperty(name = "productservice.url")
   String productServiceUrl;
@@ -21,10 +22,5 @@ public class RouteForAllProducts extends RouteBuilder {
         .setHeader(Exchange.HTTP_METHOD, constant("GET"))
         .to( productServiceUrl + "/api/v1/products")  // Externe API aufrufen
         .log("Response received: ${body}");
-        /*.process(exchange -> {
-          // Optionale Verarbeitung des Antwortkörpers
-          String responseBody = exchange.getIn().getBody(String.class);
-          exchange.getMessage().setBody(responseBody);
-        });*/
   }
 }
