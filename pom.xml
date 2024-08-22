@@ -70,6 +70,11 @@
             <artifactId>camel-quarkus-http</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jetty</artifactId>
+            <version>4.7.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-jsonpath</artifactId>
         </dependency>
