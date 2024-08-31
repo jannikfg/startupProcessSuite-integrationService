@@ -1,4 +1,4 @@
-package org.thi.sps;
+package org.thi.sps.routes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

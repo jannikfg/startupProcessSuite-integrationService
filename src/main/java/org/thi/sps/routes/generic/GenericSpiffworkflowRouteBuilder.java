@@ -1,4 +1,4 @@
-package org.thi.sps.routes;
+package org.thi.sps.routes.generic;
 
 import jakarta.inject.Inject;
 import jakarta.json.JsonObject;
@@ -8,6 +8,8 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Form;
 import jakarta.ws.rs.core.Response;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.model.RouteDefinition;
@@ -29,6 +31,7 @@ public abstract class GenericSpiffworkflowRouteBuilder extends RouteBuilder {
   @Inject
   @ConfigProperty(name = "oidc.user.name")
   String user;
+
   @Inject
   @ConfigProperty(name = "oidc.user.password")
   String userPassword;
@@ -37,18 +40,24 @@ public abstract class GenericSpiffworkflowRouteBuilder extends RouteBuilder {
   @ConfigProperty(name = "spiffworkflow.backend.url")
   String spiffworkflowBackendUrl;
 
-  protected void sendToSpiffworkflow(ProcessorDefinition<RouteDefinition> processorDefinition, String message){
-  processorDefinition
-      .log("Sending message to Spiffworkflow: ${body}")
-      .process(exchange -> {
-        String accessToken = getAccessToken();
-        exchange.getIn().setHeader("Authorization", "Bearer " + accessToken);
-      })
-      .to(spiffworkflowBackendUrl + "/v1.0/messages/" + message);
+  public Processor sendToSpiffworkflow(String message) {
+    return exchange -> {
+      String accessToken = getAccessToken();
+      String url = spiffworkflowBackendUrl + "/v1.0/messages/" + message;
+
+      Client client = ClientBuilder.newClient();
+      WebTarget target = client.target(url);
+
+      Response response = target.request()
+          .header("Authorization", "Bearer " + accessToken)
+          .post(Entity.json(exchange.getIn().getBody()));
+
+      exchange.getIn().setBody(response.readEntity(String.class));
+      response.close();
+    };
   }
 
   private String getAccessToken() {
-
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(tokenEndpoint);
 
