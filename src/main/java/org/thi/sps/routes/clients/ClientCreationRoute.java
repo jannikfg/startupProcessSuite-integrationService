@@ -1,13 +1,12 @@
-package org.thi.sps;
+package org.thi.sps.routes.clients;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.model.RouteDefinition;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.thi.sps.routes.generic.GenericSpiffworkflowRouteBuilder;
 
 @ApplicationScoped
-public class ClientCreationRoute extends RouteBuilder {
+public class ClientCreationRoute extends GenericSpiffworkflowRouteBuilder {
 
   @Inject
   @ConfigProperty(name = "redpanda.url")
@@ -18,12 +17,17 @@ public class ClientCreationRoute extends RouteBuilder {
   String clientServiceUrl;
 
   public static String TOPIC_NAME = "clients";
+  public static String SPIFFWORKFLOW_MESSAGE_NAME = "GespeicherterKundeNachricht";
 
   @Override
   public void configure() throws Exception {
     from("kafka:" + TOPIC_NAME + "?brokers=" + redpandaUrl)
         .log("Message received from Kafka: ${body}")
         .setHeader("Content-Type", constant("application/json"))
-        .to(clientServiceUrl + "/api/v1/clients");
+        .toD(clientServiceUrl + "/api/v1/clients")
+        .log("Response from Client Service: ${body}")
+        .process(sendToSpiffworkflow(SPIFFWORKFLOW_MESSAGE_NAME))
+        .onException(Exception.class)
+        .log("Error occurred: ${exception.message}");
   }
 }

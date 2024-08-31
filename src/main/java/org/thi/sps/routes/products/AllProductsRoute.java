@@ -1,4 +1,4 @@
-package org.thi.sps.routes;
+package org.thi.sps.routes.products;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
