@@ -1,13 +1,12 @@
-package org.thi.sps.routes.dataForInvoiceChanges;
+package org.thi.sps.routes.invocieRoutes.invoiceDocumentCreation;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.apache.camel.Exchange;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.thi.sps.routes.generic.GenericSpiffworkflowRouteBuilder;
 
 @ApplicationScoped
-public class LoadDocumentRoute extends GenericSpiffworkflowRouteBuilder {
+public class InvoiceDocumentCreationRoute extends GenericSpiffworkflowRouteBuilder {
 
   @Inject
   @ConfigProperty(name = "redpanda.url")
@@ -17,11 +16,11 @@ public class LoadDocumentRoute extends GenericSpiffworkflowRouteBuilder {
   @ConfigProperty(name = "documentservice.url")
   String documentServiceUrl;
 
-  public static String TOPIC_NAME = "documentToGet";
-  public static String SPIFFWORKFLOW_MESSAGE_NAME = "DokumentEingang";
-
+  public static String TOPIC_NAME = "invoicedocumentToCreate";
+  public static String SPIFFWORKFLOW_MESSAGE_NAME = "Rechnungsdokumenterstelleungsbestaetigung";
   @Override
   public void configure() throws Exception {
+
     getContext().setTracing(true);
     System.out.println(redpandaUrl);
     System.out.println(documentServiceUrl);
@@ -29,14 +28,12 @@ public class LoadDocumentRoute extends GenericSpiffworkflowRouteBuilder {
         .log("Message received from Kafka: ${body}")
         .removeHeaders("CamelHttp*")
         .removeHeaders("kafka*")
-        .setHeader("Content-Type", constant("*/*"))
-        .setHeader(Exchange.HTTP_METHOD, constant("GET"))
-        .toD(documentServiceUrl + "/api/v1/documents/" + "${body}")
-        .log("HTTP Response Code: ${header.CamelHttpResponseCode}")
-        .log("Response from product service: ${body}")
+        .setHeader("Content-Type", constant("application/json"))
+        .setHeader("CamelHttpMethod", constant("POST"))
+        .toD(documentServiceUrl + "/api/v1/documents/invoice/create")
+        .log("Response received: ${body}")
         .process(sendToSpiffworkflow(SPIFFWORKFLOW_MESSAGE_NAME))
         .onException(Exception.class)
         .log("Error occurred: ${exception.message}");
   }
-
 }
