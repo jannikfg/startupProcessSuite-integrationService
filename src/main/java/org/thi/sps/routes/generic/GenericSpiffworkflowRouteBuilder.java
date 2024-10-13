@@ -42,6 +42,7 @@ public abstract class GenericSpiffworkflowRouteBuilder extends RouteBuilder {
 
   public Processor sendToSpiffworkflow(String message) {
     return exchange -> {
+
       String accessToken = getAccessToken();
       String url = spiffworkflowBackendUrl + "/v1.0/messages/" + message;
 
