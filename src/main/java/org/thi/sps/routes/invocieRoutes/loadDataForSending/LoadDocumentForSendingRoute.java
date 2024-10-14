@@ -27,7 +27,7 @@ public class LoadDocumentForSendingRoute extends GenericSpiffworkflowRouteBuilde
     System.out.println(documentServiceUrl);
     from("kafka:" + TOPIC_NAME + "?brokers=" + redpandaUrl)
         .log("Message received from Kafka: ${body}")
-        .delay(3000)
+        .delay(5000)
         .removeHeaders("CamelHttp*")
         .removeHeaders("kafka*")
         .setHeader("Content-Type", constant("*/*"))

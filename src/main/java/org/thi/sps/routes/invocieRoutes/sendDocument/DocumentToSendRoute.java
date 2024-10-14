@@ -25,8 +25,9 @@ public class DocumentToSendRoute extends GenericSpiffworkflowRouteBuilder {
         .removeHeaders("kafka*")
         .setHeader("Content-Type", constant("*/*"))
         .setHeader(Exchange.HTTP_METHOD, constant("POST"))
-        .log("Sending message to booking service with body: ${body}")
-        .log("Sending message to booking service with headers: ${headers}");
+        .log("Sending message to booking service with body: ${body}");
+        //TODO: Hier muss die Anbindung an den Digitalen Versanddienst implementiert werden
+        //Nicht im Rahmen dieser Arbeit fortgeführt
 
   }
 }

@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.thi.sps.processors.ClientProcessor;
 import org.thi.sps.routes.generic.GenericSpiffworkflowRouteBuilder;
 
 @ApplicationScoped
@@ -27,7 +28,7 @@ public class LoadClientDataForSendingRoute extends GenericSpiffworkflowRouteBuil
     System.out.println(clientServiceUrl);
     from("kafka:" + TOPIC_NAME + "?brokers=" + redpandaUrl)
         .log("Message received from Kafka: ${body}")
-        .delay(2500)
+        .delay(5000)
         .removeHeaders("CamelHttp*")
         .removeHeaders("kafka*")
         .setHeader("Content-Type", constant("*/*"))
@@ -35,6 +36,7 @@ public class LoadClientDataForSendingRoute extends GenericSpiffworkflowRouteBuil
         .toD(clientServiceUrl + "/api/v1/clients/" + "${body}")
         .log("HTTP Response Code: ${header.CamelHttpResponseCode}")
         .log("Response from product service: ${body}")
+        .process(new ClientProcessor())
         .process(sendToSpiffworkflow(SPIFFWORKFLOW_MESSAGE_NAME))
         .onException(Exception.class)
         .log("Error occurred: ${exception.message}");

@@ -1,4 +1,4 @@
-package org.thi.sps.routes.products;
+package org.thi.sps.routes.invocieRoutes.dataForInvoiceChanges;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

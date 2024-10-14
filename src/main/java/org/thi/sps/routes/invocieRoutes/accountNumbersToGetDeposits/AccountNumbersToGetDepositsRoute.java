@@ -1,19 +1,19 @@
-package org.thi.sps.routes.invocieRoutes.invoiceToRecord;
+package org.thi.sps.routes.invocieRoutes.accountNumbersToGetDeposits;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
-import org.apache.camel.builder.RouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.thi.sps.routes.generic.GenericSpiffworkflowRouteBuilder;
 
 @ApplicationScoped
-public class InvoiceToRecordRoute extends RouteBuilder {
+public class AccountNumbersToGetDepositsRoute extends GenericSpiffworkflowRouteBuilder {
   @Inject
   @ConfigProperty(name = "redpanda.url")
   String redpandaUrl;
 
 
-  public static String TOPIC_NAME = "invoiceToRecord";
+  public static String TOPIC_NAME = "accountNumbersToGetDeposits";
   @Override
   public void configure() throws Exception {
     getContext().setTracing(true);
@@ -24,9 +24,9 @@ public class InvoiceToRecordRoute extends RouteBuilder {
         .removeHeaders("kafka*")
         .setHeader("Content-Type", constant("*/*"))
         .setHeader(Exchange.HTTP_METHOD, constant("POST"))
-        .log("Sending message to booking service with body: ${body}");
-        //TODO: Hier muss die Anbindung an den Buchungsdienst implementiert werden
-        //Nicht im Rahmen dieser Arbeit fortgeführt
+        .log("Getting all deposist for incoming account numbers: ${body}");
+    //TODO: Hier muss die Anbindung an die Banken implementiert werden
+    //Nicht im Rahmen dieser Arbeit fortgeführt
 
   }
 
