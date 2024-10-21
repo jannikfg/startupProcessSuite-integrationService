@@ -59,42 +59,32 @@ public class InvoiceDocumentCreationRoute extends GenericSpiffworkflowRouteBuild
         .removeHeaders("kafka*")
         .unmarshal().json()  // Verwende JSON-Deserialisierung
         .log("Message unmarshalled to JSON: ${body}")
-
         .setProperty("invoiceData", simple("${body[invoice]}"))
         .setProperty("clientId", simple("${body[invoice][clientId]}"))
-
         .setBody(simple("${exchangeProperty.clientId}"))
         .setHeader(Exchange.HTTP_METHOD, constant("GET"))
         .toD(clientServiceUrl + "/api/v1/clients/${body}")
-
         .unmarshal(clientJsonDataFormat)
         .process(exchange -> {
-          // Invoice-Objekt aus der Property holen
           Map<String, Object> invoiceData = exchange.getProperty("invoiceData", Map.class);
           if (invoiceData == null) {
             throw new RuntimeException("Invoice data not found in exchange.");
           }
-
           InvoiceForDocumentService invoiceForDoc = new InvoiceForDocumentService();
           invoiceForDoc.setId((String) invoiceData.get("id"));
           invoiceForDoc.setDescription((String) invoiceData.get("description"));
           invoiceForDoc.setCreatedDate(LocalDate.parse((String) invoiceData.get("createdDate")));
           invoiceForDoc.setClientId(invoiceData.get("clientId").toString());
-          invoiceForDoc.setDateOfDelivery(
-              LocalDate.parse((String) invoiceData.get("dateOfDelivery")));
+          invoiceForDoc.setDateOfDelivery(LocalDate.parse((String) invoiceData.get("dateOfDelivery")));
           invoiceForDoc.setNoticeOfTaxExemption((String) invoiceData.get("noticeOfTaxExemption"));
-          invoiceForDoc.setNoticeOfRetentionObligation(
-              (String) invoiceData.get("noticeOfRetentionObligation"));
-
+          invoiceForDoc.setNoticeOfRetentionObligation((String) invoiceData.get("noticeOfRetentionObligation"));
           invoiceForDoc.setNetTotal(convertToString(invoiceData.get("netTotal")));
           invoiceForDoc.setTaxTotal(convertToString(invoiceData.get("taxTotal")));
           invoiceForDoc.setTotal(convertToString(invoiceData.get("total")));
           invoiceForDoc.setTotalOutstanding(convertToString(invoiceData.get("totalOutstanding")));
           invoiceForDoc.setPaid((Boolean) invoiceData.get("paid"));
 
-          List<Map<String, Object>> invoiceItemsData = (List<Map<String, Object>>) invoiceData.get(
-              "invoiceItems");
-          log.info("invoiceItemsData: " + invoiceItemsData);
+          List<Map<String, Object>> invoiceItemsData = (List<Map<String, Object>>) invoiceData.get("invoiceItems");
           if (invoiceItemsData != null) {
             List<InvoiceItemForDocumentService> invoiceItems = new ArrayList<>();
             for (Map<String, Object> itemData : invoiceItemsData) {
@@ -103,17 +93,14 @@ public class InvoiceDocumentCreationRoute extends GenericSpiffworkflowRouteBuild
               invoiceItem.setName((String) itemData.get("name"));
               invoiceItem.setDescription((String) itemData.get("description"));
               invoiceItem.setCategory((String) itemData.get("category"));
-
               invoiceItem.setNetPrice(convertToDouble(itemData.get("netPrice")));
               invoiceItem.setQuantity(convertToDouble(itemData.get("quantity")));
               invoiceItem.setUnit((String) itemData.get("unit"));
               invoiceItem.setTaxRate(itemData.get("taxRate").toString());
               invoiceItem.setDiscount(convertToDouble(itemData.get("discount")));
-
               invoiceItem.setNetTotal(convertToString(itemData.get("netTotal")));
               invoiceItem.setTaxTotal(convertToString(itemData.get("taxTotal")));
               invoiceItem.setTotal(convertToString(itemData.get("total")));
-
               invoiceItems.add(invoiceItem);
             }
             invoiceForDoc.setInvoiceItems(invoiceItems);
@@ -121,35 +108,26 @@ public class InvoiceDocumentCreationRoute extends GenericSpiffworkflowRouteBuild
 
           InvoiceCreationRequest invoiceCreationRequest = new InvoiceCreationRequest();
           invoiceCreationRequest.setInvoice(invoiceForDoc);
-
-          ClientForDocumentService client = exchange.getIn()
-              .getBody(ClientForDocumentService.class);
+          ClientForDocumentService client = exchange.getIn().getBody(ClientForDocumentService.class);
           invoiceCreationRequest.setClient(client);
-
           exchange.getIn().setBody(invoiceCreationRequest);
         })
         .marshal(invoiceRequestJsonDataFormat)
         .setHeader(Exchange.HTTP_METHOD, constant("POST"))
         .setHeader("Content-Type", constant("application/json"))
         .toD(documentServiceUrl + "/api/v1/documents/invoice/create")
-        .log("Response received from document service: ${body}")
         .process(exchange -> {
-
           String responseBody = exchange.getIn().getBody(String.class);
           ObjectMapper objectMapperForDocument = new ObjectMapper();
           JsonNode responseJson = objectMapperForDocument.readTree(responseBody);
-
           String documentLink = responseJson.get("documentLink").asText();
           String invoiceId = responseJson.get("invoiceId").asText();
-
           Document document = new Document();
           document.setDocumentId(invoiceId);
           document.setInvoiceId(invoiceId);
           document.setLinkToDocument(documentLink);
           document.setDocumentType("Rechnungsdokument");
-
           String jsonResponse = objectMapperForDocument.writeValueAsString(document);
-
           exchange.getIn().setBody(jsonResponse);
         })
         .log("Response to Send To PDA: ${body}")
