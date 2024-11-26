@@ -23,6 +23,9 @@ public class ClientCreationRoute extends GenericSpiffworkflowRouteBuilder {
   public void configure() throws Exception {
     from("kafka:" + TOPIC_NAME + "?brokers=" + redpandaUrl)
         .log("Message received from Kafka: ${body}")
+        .removeHeaders("CamelHttp*")
+        .removeHeaders("kafka*")
+        .removeHeaders("CamelKafka*")
         .setHeader("Content-Type", constant("application/json"))
         .toD(clientServiceUrl + "/api/v1/clients")
         .log("Response from Client Service: ${body}")
