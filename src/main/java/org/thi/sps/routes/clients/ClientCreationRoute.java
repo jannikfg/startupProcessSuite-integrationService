@@ -16,8 +16,8 @@ public class ClientCreationRoute extends GenericSpiffworkflowRouteBuilder {
   @ConfigProperty(name = "clientservice.url")
   String clientServiceUrl;
 
-  public static String TOPIC_NAME = "clients";
-  public static String SPIFFWORKFLOW_MESSAGE_NAME = "GespeicherterKundeNachricht";
+  public static String TOPIC_NAME = "ClientPersistenceQueue";
+  public static String SPIFFWORKFLOW_MESSAGE_NAME = "ClientCreationMessage";
 
   @Override
   public void configure() throws Exception {

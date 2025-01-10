@@ -1,4 +1,4 @@
-package org.thi.sps.routes.products;
+package org.thi.sps.routes.clients;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -6,21 +6,19 @@ import org.apache.camel.Exchange;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.thi.sps.routes.generic.GenericSpiffworkflowRouteBuilder;
 
-import java.util.concurrent.TimeUnit;
-
 @ApplicationScoped
-public class ProductListRoute extends GenericSpiffworkflowRouteBuilder {
+public class ClientLoadingRoute extends GenericSpiffworkflowRouteBuilder {
+
+  @Inject
+  @ConfigProperty(name = "clientservice.url")
+  String clientServiceUrl;
 
   @Inject
   @ConfigProperty(name = "redpanda.url")
   String redpandaUrl;
 
-  @Inject
-  @ConfigProperty(name = "productservice.url")
-  String productServiceUrl;
-
-  public static String TOPIC_NAME = "getProductList";
-  public static String SPIFFWORKFLOW_MESSAGE_NAME = "Produktliste";
+  public static String TOPIC_NAME = "ClientLoadingQueue";
+  public static String SPIFFWORKFLOW_MESSAGE_NAME = "ClientListMessage";
 
   @Override
   public void configure() throws Exception {
@@ -30,8 +28,8 @@ public class ProductListRoute extends GenericSpiffworkflowRouteBuilder {
         .removeHeaders("CamelKafka*")
         .setHeader("Content-Type", constant("application/json"))
         .setHeader(Exchange.HTTP_METHOD, constant("GET"))
-        .toD(productServiceUrl + "/api/v1/products")
-        .log("Response from Product Service: ${body}")
+        .toD( clientServiceUrl + "/api/v1/clients")  // Externe API aufrufen
+        .log("Response received: ${body}")
         .process(sendToSpiffworkflow(SPIFFWORKFLOW_MESSAGE_NAME))
         .onException(Exception.class)
         .log("Error occurred: ${exception.message}");
